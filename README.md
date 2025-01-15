@@ -9,5 +9,5 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 ## TODO
 
-- [ ] Fill in My Story
 - [ ] Finish writing Headscale on Fly (Part 1)
+- [ ] Add a Books Page

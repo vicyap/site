@@ -19,8 +19,6 @@ defmodule MySiteWeb.Router do
     get "/blog", PageController, :blog
     get "/blog/posts/:year/:month_day_id", PageController, :post
     get "/public", PageController, :public
-    # get "/uses", PageController, :uses
-    # get "/contact", PageController, :contact
   end
 
   defp put_current_url(conn = %Plug.Conn{}, _opts) do

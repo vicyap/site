@@ -24,12 +24,4 @@ defmodule MySiteWeb.PageController do
   def public(conn, _params) do
     render(conn, :public)
   end
-
-  def uses(conn, _params) do
-    render(conn, :uses)
-  end
-
-  def contact(conn, _params) do
-    render(conn, :contact)
-  end
 end

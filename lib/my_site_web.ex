@@ -17,7 +17,7 @@ defmodule MySiteWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt Victor_Yap_Resume.pdf)
+  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt obj)
 
   def router do
     quote do

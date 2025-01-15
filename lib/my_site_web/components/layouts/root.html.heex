@@ -2,15 +2,57 @@
 <html lang="en" class="[scrollbar-gutter:stable]">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="MySite" suffix=" · Phoenix Framework">
+
+    <.live_title default="Victor Yap" suffix=" | Victor Yap">
       {assigns[:page_title]}
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+
+    <%!-- <meta property="og:title" content="Page Title | Victor Yap" /> --%>
+
+    <meta property="og:locale" content="en_US" />
+
+    <link rel="canonical" href={@current_url} />
+    <meta property="og:url" content={@current_url} />
+
+    <meta name="description" content="Victor Yap Personal Website" />
+    <link rel="icon" type="image/png" href={~p"/images/favicon.png"} />
+    <meta property="og:site_name" content="Victor Yap" />
+    <meta property="og:image" content={~p"/images/social.jpg"} />
+
+    <link crossorigin="crossorigin" href="https://fonts.gstatic.com" rel="preconnect" />
+
+    <link
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="preload"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" />
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/atom-one-dark.min.css"
+    />
+    <script>
+      hljs.initHighlightingOnLoad();
     </script>
+
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer />
+
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"} />
   </head>
+
   <body class="bg-white">
     {@inner_content}
   </body>

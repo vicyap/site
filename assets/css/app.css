@@ -2,4 +2,18 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* This file is for your main application CSS */
+html {
+  @apply font-body antialiased;
+}
+
+.container {
+  max-width: 600px;
+
+  @screen sm {
+    max-width: 700px;
+  }
+
+  @screen md {
+    max-width: 850px;
+  }
+}

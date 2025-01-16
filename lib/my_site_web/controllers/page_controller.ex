@@ -15,8 +15,8 @@ defmodule MySiteWeb.PageController do
     render(conn, :blog, posts: posts)
   end
 
-  def post(conn, %{"year" => year, "month_day_id" => month_day_id}) do
-    post = Blog.get_post_by_year_and_month_day_id(year, month_day_id)
+  def post(conn, %{"id" => id}) do
+    post = Blog.get_post_by_id(id)
 
     render(conn, :post, post: post)
   end

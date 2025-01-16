@@ -15,9 +15,8 @@ defmodule MySite.Blog do
   def recent_posts(num), do: Enum.take(all_posts(), num)
   def all_tags, do: @tags
 
-  def get_post_by_year_and_month_day_id(year, month_day_id) do
-    @posts
-    |> Enum.filter(&(&1.year == year))
-    |> Enum.find(&(&1.month_day_id == month_day_id))
+  def get_post_by_id(id) do
+    all_posts()
+    |> Enum.find(&(&1.id == id))
   end
 end

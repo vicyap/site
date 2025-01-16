@@ -17,7 +17,7 @@ defmodule MySiteWeb.Router do
 
     get "/", PageController, :home
     get "/blog", PageController, :blog
-    get "/blog/posts/:year/:month_day_id", PageController, :post
+    get "/blog/posts/:id", PageController, :post
     get "/public", PageController, :public
   end
 

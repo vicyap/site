@@ -17,7 +17,7 @@ defmodule MySiteWeb.MyComponents do
     ~H"""
     <div :for={post <- @posts} class="border-b border-grey-lighter pb-8">
       <a
-        href={"/blog/posts/#{post.year}/#{post.month_day_id}"}
+        href={"/blog/posts/#{post.url_path}"}
         class="block font-body text-lg font-semibold text-primary transition-colors hover:text-green dark:text-white dark:hover:text-secondary"
       >
         {post.title}

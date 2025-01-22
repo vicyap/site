@@ -36,18 +36,17 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" />
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js" />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/atom-one-dark.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js" />
     <script>
-      hljs.initHighlightingOnLoad();
+      hljs.highlightAll();
     </script>
 
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.14.8/cdn.min.js" defer />
 
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"} />
@@ -92,7 +91,7 @@
     x-data="global()"
     x-init="themeInit()"
     class="bg-white dark:bg-primary"
-    x-bind:class="{isMobileMenuOpen ? 'max-h-screen overflow-hidden relative' : ''}"
+    x-bind:class="isMobileMenuOpen ? 'max-h-screen overflow-hidden relative': ''"
   >
     {@inner_content}
   </body>

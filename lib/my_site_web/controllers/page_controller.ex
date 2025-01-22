@@ -15,8 +15,12 @@ defmodule MySiteWeb.PageController do
     render(conn, :blog, posts: posts)
   end
 
-  def post(conn, %{"id" => id}) do
-    post = Blog.get_post_by_id(id)
+  def redirect_to_blog(conn, _params) do
+    redirect(conn, to: ~p"/blog")
+  end
+
+  def post(conn, %{"url_path" => url_path}) do
+    post = Blog.get_post_by_url_path(url_path)
 
     render(conn, :post, post: post)
   end

@@ -48,7 +48,10 @@ config :my_site, MySiteWeb.Endpoint,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/my_site_web/(controllers|live|components)/.*(ex|heex)$"
+      ~r"priv/posts/.*(md)$",
+      ~r"lib/my_site_web/(controllers|live|components)/.*(ex|heex)$",
+      ~r"lib/my_site/.*(ex)$",
+      ~r"lib/my_site/.*/.*(ex)$"
     ]
   ]
 

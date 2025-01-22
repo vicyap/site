@@ -19,4 +19,9 @@ defmodule MySite.Blog do
     all_posts()
     |> Enum.find(&(&1.id == id))
   end
+
+  def get_post_by_url_path(url_path) do
+    all_posts()
+    |> Enum.find(&(&1.url_path == url_path))
+  end
 end

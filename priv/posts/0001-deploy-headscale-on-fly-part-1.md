@@ -86,12 +86,11 @@ solution is to copy the `headscale` binary into an `alpine` image.
 Next, use `fly launch --no-deploy` to create a Fly app and `fly.toml` file
 without deploying it.
 
-Here's an example with hardcoded some defaults:
+Here's an example with some hardcoded defaults:
 ```bash
 fly launch --yes --no-deploy \
   --generate-name \
   --vm-size shared-cpu-1x \
-  --vm-memory 256 \
   --volume-initial-size 1
 ```
 

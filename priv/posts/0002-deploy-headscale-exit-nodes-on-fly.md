@@ -1,47 +1,52 @@
 %{
-  title: "Deploy Headscale on Fly (Part 2)",
-  date: "2025-01-23",
+  title: "Deploy Headscale Exit Nodes on Fly",
+  date: "2025-01-24",
   tags: ~w(networking)
 }
 ---
 
 ## TLDR
 
-In [Part 1](./deploy-headscale-on-fly-part-1), I described how to deploy a
-[headscale](https://headscale.net/) server on [fly.io](https://fly.io/).
+In my previous [post](./deploy-a-headscale-server-on-fly), I described how to
+deploy a [headscale](https://headscale.net/) server on
+[fly.io](https://fly.io/).
 
 In this post, I will go through how to deploy exit nodes that register to that
-self-hosted [headscale](https://headscale.net/) server on
-[fly.io](https://fly.io/).
+[headscale](https://headscale.net/) server on [fly.io](https://fly.io/).
 
 If you just want to see the code, see my repo here:
 https://github.com/vicyap/headscale-on-fly
 
 ## Why?
 
-In [Part 1](./deploy-headscale-on-fly-part-1), I described why I started this
-idea. The gist is that I was on a wifi network that blocked `tailscale.com`,
-which prevented me from connecting to my remote development machine. The
-solution was to deploy my own `headscale` server and connect my devices to that.
+In my previous [post](./deploy-a-headscale-server-on-fly), I described why I
+started this idea. The gist is that I was on a wifi network that blocked
+`tailscale.com`, which prevented me from connecting to my remote development
+machine. The solution was to deploy my own `headscale` server and connect my
+devices to that.
 
-However, I am still unable to access the Tailscale docs at
-https://tailscale.com/kb.
+However, since `tailscale.com` is blocked, I am also unable to access the
+Tailscale docs at https://tailscale.com/kb.
 
 A solution is to deploy another tailscale node and configure it to be an [exit
 node](https://tailscale.com/kb/1103/exit-nodes).
 
-So how should we deploy this exit node...? Well I already deployed the
-`headscale` server with Fly, so why not Fly?
+So how should we deploy this exit node...? Well the `headscale` server is
+already deployed with Fly, so why not Fly?
 
 *I know I could simply configure my remote development machine as an exit node,
-but deploying to Fly makes it easier to see what the bare minimum steps are that
-are required.*
+but deploying to Fly makes it easier to see what the bare minimum steps.*
 
-## Deploy a Tailscale Exit Node on Fly
+## Deploy an Exit Node on Fly
 
 ### Fly Setup
 
-I will assume you already have an account with [Fly](https://fly.io/) and you have already logged into the CLI with `fly auth login`.
+I will assume you already have an account with [Fly](https://fly.io/) and you
+have already logged into the CLI with:
+
+```bash
+fly auth login
+```
 
 ### Dockerfile and Start Script
 
@@ -77,10 +82,9 @@ tailscale up --login-server=${HEADSCALE_URL} --hostname=${FLY_REGION} --advertis
 wait
 ```
 
-Note that, in `start_tailscale.sh`, `--hostname` is set to `FLY_REGION`. This
-flag configures the name of the exit node. In my opinion, naming the exit node
-after the region it is deployed makes it easier to keep track of where my
-traffic is going.
+Note: In `start_tailscale.sh`, `--hostname` is set to `FLY_REGION`. This flag
+configures the name of the exit node. In my opinion, naming the exit node after
+the region makes it easier to keep track of where the exit node is deployed.
 
 `FLY_REGION` is an environment variable available to Fly Machines. See here for
 a full list of available environment variables:
@@ -99,7 +103,7 @@ fly launch --yes --no-deploy \
   --volume-initial-size 1
 ```
 
-Now, edit `fly.toml` and add some additional configuration:
+Now, edit `fly.toml` and add the following additional configuration:
 ```ini
 [processes]
   app = '/bin/sh /app/start_tailscale.sh'
@@ -116,7 +120,9 @@ Now, edit `fly.toml` and add some additional configuration:
   HEADSCALE_URL = 'https://my-headscale.fly.dev'
 ```
 
-Finally, remove the `[http_service]` section since this app does not expose any http services. Keeping this section will cause an error during deploy because Fly will expect the `internal_port` to be listening.
+Finally, remove the `[http_service]` section since this app does not expose any
+http services. Keeping this section will cause an error during deploy because
+Fly will expect the `internal_port` to be listening.
 
 The final `fly.toml` file should look something like this:
 ```ini
@@ -143,7 +149,8 @@ primary_region = 'dfw'
   HEADSCALE_URL = 'https://my-headscale.fly.dev'
 ```
 
-**Note**: Make sure you update `HEADSCALE_URL` to your `headscale` server's domain.
+**Note**: Make sure you update `HEADSCALE_URL` to your `headscale` server's
+domain.
 
 ### Deploy
 
@@ -169,11 +176,13 @@ fly --app my-headscale logs
 ```
 
 You should see log messages that look like this:
-```console
-2025-01-23T17:09:25Z app[328723dc429698] dfw [info]2025-01-23T17:09:25Z INF home/runner/work/headscale/headscale/hscontrol/auth.go:28 > Successfully sent auth url: https://some-namet-1234.fly.dev:443/register/mkey:a4f099968d4c1207ab0b80d73691ba3c25726540bfbbc8422434dd8dd28a3222 expiry=-62135596800 followup=https://some-name-1234.fly.dev:443/register/mkey:a4f099968d4c1207ab0b80d73691ba3c25726540bfbbc8422434dd8dd28a3222 machine_key=[pPCZl] node=dfw node_key=[tB8Ik] node_key_old=
+```plaintext
+2025-01-23T17:09:25Z app[328723dc429698] dfw [info]2025-01-23T17:09:25Z INF home/runner/work/headscale/headscale/hscontrol/auth.go:28 > Successfully sent auth url: https://some-name-1234.fly.dev:443/register/mkey:a4f099968d4c1207ab0b80d73691ba3c25726540bfbbc8422434dd8dd28a3222 expiry=-62135596800 followup=https://some-name-1234.fly.dev:443/register/mkey:a4f099968d4c1207ab0b80d73691ba3c25726540bfbbc8422434dd8dd28a3222 machine_key=[pPCZl] node=dfw node_key=[tB8Ik] node_key_old=
 ```
 
-The key part of the message is `Successfully sent auth url: https://...`. Go to this url to get the command you will need to run on your `headscale` server to register the newly launched node.
+The important part of the message is `Successfully sent auth url: https://...`.
+Go to this url to get the command you will need to run on your `headscale`
+server to register the newly launched node.
 
 Run the command on your `headscale` server. For example:
 
@@ -183,13 +192,16 @@ Run the command on your `headscale` server. For example:
 fly --app my-headscale ssh console -C 'headscale nodes register --user my-user --key mkey:a4f099968d4c1207ab0b80d73691ba3c25726540bfbbc8422434dd8dd28a3222'
 ```
 
-**Note**: See [Part 1](./deploy-headscale-on-fly-part-1) for how to create a `headscale` user.
+**Note**: To create a `headscale` user, run `headscale users create my-user`.
+See my previous [post](./deploy-a-headscale-server-on-fly) for more details.
 
 ## Enable Exit Node Routes on Headscale
 
 The final step is to enable the exit node routes. This can be done through `headscale routes`.
 
-This is required because Tailscale requires an Owner, Admin or Network Admin to allow a device to be an exit node for the tailnet. See their docs for more info here: https://tailscale.com/kb/1103/exit-nodes.
+This is required because Tailscale requires an Owner, Admin or Network Admin to
+allow a device to be an exit node for the tailnet. See their docs for more info
+here: https://tailscale.com/kb/1103/exit-nodes.
 
 ### List Routes
 
@@ -200,11 +212,14 @@ To list routes:
 fly --app my-headscale ssh console -C 'headscale routes list'
 ```
 
-```console
+Notice `Enabled` is `false`.
+
+```plaintext
 ID | Node | Prefix    | Advertised | Enabled | Primary
 1  | dfw  | ::/0      | true       | false   | -
 2  | dfw  | 0.0.0.0/0 | true       | false   | -
 ```
+
 
 ### Enable Routes
 
@@ -223,7 +238,9 @@ List the routes and verify that they are enabled.
 fly --app my-headscale ssh console -C 'headscale routes list'
 ```
 
-```console
+Notice `Enabled` is `true`.
+
+```plaintext
 ID | Node | Prefix    | Advertised | Enabled | Primary
 1  | dfw  | ::/0      | true       | true    | -
 2  | dfw  | 0.0.0.0/0 | true       | true    | -
@@ -233,15 +250,15 @@ ID | Node | Prefix    | Advertised | Enabled | Primary
 
 Congrats! You should now be able to route your traffic through exit nodes deployed on Fly.
 
-And now, I am able to access teh Tailscale docs at https://tailscale.com/kb.
-
 ## Bonus - Deploy to Another Region
 
-If you want to, you can deploy multiple exit nodes, each to a different Fly region.
+If you want, you can deploy multiple exit nodes, each to a different Fly region.
 
-To do so, a simple way would be to use `fly machine clone` to clone your existing exit node to another region.
+To do so, use `fly machine clone` to clone your existing fly machine to another
+region.
 
-Run `fly machine list` to list your machines. Get the ID of your existing exit node.
+Run `fly machine list` to list your machines. Get the ID of your existing exit
+node.
 
 Run `fly platform regions` to see the list of regions that are available.
 

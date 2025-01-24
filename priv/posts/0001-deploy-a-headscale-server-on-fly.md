@@ -1,5 +1,5 @@
 %{
-  title: "Deploy Headscale on Fly (Part 1)",
+  title: "Deploy a Headscale Server on Fly",
   date: "2025-01-22",
   tags: ~w(networking)
 }
@@ -94,7 +94,7 @@ fly launch --yes --no-deploy \
   --volume-initial-size 1
 ```
 
-Now, edit `fly.toml` and add some additional configuration:
+Now, edit `fly.toml` and add the following additional configuration:
 ```ini
 [processes]
   app = 'headscale serve'
@@ -215,6 +215,6 @@ To connect other devices, see the headscale docs here:
 
 Congrats! You have deployed `headscale` on Fly and connected your first device.
 
-In an upcoming part 2, I will go over how to run an exit node. This will allow
+In an upcoming blog post, I will go over how to run an exit node. This will allow
 you to access websites that were previously blocked, like the Tailscale docs at
 https://tailscale.com/kb.

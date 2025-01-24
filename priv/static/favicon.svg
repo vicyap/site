@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg 
+    width="64" 
+    height="64" 
+    viewBox="0 0 64 64" 
+    xmlns="http://www.w3.org/2000/svg"
+    aria-labelledby="title"
+    role="img"
+>
+  <title id="title">Favicon for Light or Dark Mode</title>
+
+  <!-- 
+    This design:
+      - Has a bold, mid-tone gradient that stands out 
+        against both dark and light browser themes.
+      - Uses white brackets/slash for software-engineering flair.
+  -->
+
+  <!-- Gradient Definition -->
+  <defs>
+    <radialGradient 
+      id="circleGradient" 
+      cx="0.5" cy="0.5" r="0.7"
+    >
+      <stop offset="0%" stop-color="#661AE6" />    <!-- Inner color -->
+      <stop offset="100%" stop-color="#9952F3" />  <!-- Outer color -->
+    </radialGradient>
+  </defs>
+
+  <!-- Transparent background so the circle shape 
+       stands out on light or dark tabs/icons -->
+  <rect width="64" height="64" fill="none" />
+
+  <!-- Colored circle in the center -->
+  <circle
+    cx="32" cy="32" r="26"
+    fill="url(#circleGradient)"
+  />
+
+  <!-- White code bracket and slash (centered) -->
+  <!-- Left bracket -->
+  <path
+    d="M 24 20 L 16 32 L 24 44"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Slash -->
+  <path
+    d="M 30 18 L 34 46"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Right bracket -->
+  <path
+    d="M 40 20 L 48 32 L 40 44"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

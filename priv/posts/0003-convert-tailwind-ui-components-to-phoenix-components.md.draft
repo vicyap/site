@@ -1,0 +1,61 @@
+%{
+  title: "Convert Tailwind UI Components to Phoenix Components",
+  date: "2025-01-28",
+  tags: ~w(elixir frontend)
+}
+---
+
+## TLDR
+
+## Why?
+
+## Draft Notes
+
+### 2025-01-28 Notes
+
+https://github.com/vicyap/tailwind-ui-components-to-phoenix-components
+
+Summary: I need to try this workflow more to understand it better. To figure out if I can get it to work better for me. My main question is how do I break down larger components like the Application Shell Stacked Layout.
+
+A fallback post is to manually convert the free components, starting with the simpler components like "nav bar" and "badges" and building it up. A "lessons learned in converting tailwind ui components to phoenix components"
+
+https://tailwindui.com/components
+
+Converting simple UI components like [badges](https://tailwindui.com/components/application-ui/elements/badges) has been easy.
+
+Converting larger UI components, essentially composite components, like this application shell stacked layout (https://tailwindui.com/components/application-ui/application-shells/stacked) has not been very easy. Still working on it actually.
+
+### Copilot
+
+Using copilot inside VS Code looks promising.
+
+### ChatGPT
+
+Model: `o1-mini`
+
+Created a ChatGPT Project called `Tailwind UI Components to Phoenix Components`.
+
+Asked: "What is the latest versions of elixir, phoenix framework, phoenix liveview and tailwind css that you know?"
+* Elixir 1.15
+* Phoenix Framework: 1.7
+* Phoenix LiveView: 0.18
+* Tailwind CSS: 3.4
+* Date: October 2023
+
+
+https://tailwindui.com/components/application-ui/application-shells/stacked
+```
+Convert the following HTML to a Phoenix Liveview module. Name the module HelloWeb.DashboardLive`.
+
+#### Clean Slate Attempt
+
+Model: o1
+
+I am using Elixir, Phoenix and Phoenix LiveView.
+I will provide some Tailwind CSS HTML.
+Outline how you would refactor this component into smaller components.
+The outline should include the following:
+1. High-Level layout structure in html
+2. Reusable function components in elixir/phoenix.
+3. Putting it together in a Phoenix LiveView module.
+4. Summary

@@ -20,6 +20,8 @@ defmodule MySiteWeb.Router do
     get "/blog/posts/", PageController, :redirect_to_blog
     get "/blog/posts/:url_path", PageController, :post
     get "/public", PageController, :public
+    get "/portfolio", PageController, :portfolio
+    get "/projects", PageController, :projects
   end
 
   defp put_current_url(conn = %Plug.Conn{}, _opts) do

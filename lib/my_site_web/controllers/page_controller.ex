@@ -28,4 +28,12 @@ defmodule MySiteWeb.PageController do
   def public(conn, _params) do
     render(conn, :public)
   end
+
+  def portfolio(conn, _params) do
+    redirect(conn, to: ~p"/")
+  end
+
+  def projects(conn, _params) do
+    redirect(conn, to: ~p"/")
+  end
 end

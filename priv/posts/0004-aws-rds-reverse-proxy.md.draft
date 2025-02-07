@@ -1,0 +1,226 @@
+%{
+  title: "AWS RDS Reverse Proxy",
+  date: "2025-02-07",
+  tags: ~w(aws networking)
+}
+---
+
+## TLDR
+
+## The Problem
+
+As a DevOps consultant and contractor, I have had to help at least two clients access an AWS RDS database running in private subnets from outside of its VPC.
+
+One reason is that the database was originally public (oops!) and legacy applications and services still assume they can reach the database as if it were public. Once the database has been moved to private subnets, these legacy applications and services need a temporary window of time to also be moved into the same VPC or adjust how they are going to connect to the database.
+
+Another reason is that the RDS database might be created by a vendor in your account, and you have a new requirement to allow your applications to connect to that database, but your applications may be running in a different cloud provider (ie. multi-cloud).
+
+So, what solutions are there to access an RDS database in private subnets from outside of its VPC?
+
+## Solutions
+
+1. **VPN / Tailscale / Direct Connect / Transit Gateway** (some form of secure network extension)
+2. **Network Load Balancer (NLB) Reverse Proxy + IP Allowlists With End-to-End SSL/TLS**
+
+Certainly, you could get creative and come up with more ideas, but I believe these two are the best balance between developer ease, infrastructure complexity, costs and security.
+
+### Comparison Table
+
+| Aspect                             | VPN / Tailscale / DX / TGW                                                                                                                 | NLB Reverse Proxy + SSL + IP Allowlists                                                                              |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| **Developer Ease**                 | If devs already use Tailscale/VPN, they just connect to the private RDS endpoint. Otherwise, they must install and configure a VPN client.   | Devs use a public DNS with Postgres SSL; no extra VPN client needed. Their IP must be in the allowlists.                  |
+| **Infrastructure**                 | More initial work: configure Tailscale subnet router, Site-to-Site VPN, or Transit Gateway. Can be more complex to set up.                  | Minimal setup: create NLB in a public subnet, register RDS as target, configure IP allowlists.      |
+| **Maintenance**                    | After initial setup, day-to-day is typically minimal. Tailscale often updates automatically; AWS manages the VPN gateway if using Site-to-Site. | AWS manages the load balancer. You only maintain IP allowlists. No OS patching or multi-AZ concerns.                             |
+| **Costs**                          | Tailscale can be free or low cost if usage is small; AWS VPN is about $36 per month plus data. Larger solutions (TGW, DX) can be more expensive.  | Around $16 per month for NLB in us-east-1 plus data egress fees. No extra EC2 needed.                                  |
+| **Security**                       | No public endpoint at all; fully private tunnel or overlay with encryption. Most secure if you want zero public exposure.    | RDS is private; only the NLB endpoint is exposed, restricted by IP allowlists. Traffic is SSL-encrypted end-to-end. |
+
+### Bottom Line
+
+1. **VPN / Tailscale / Direct Connect / Transit Gateway**  
+   - **Pros**: Zero external exposure. All traffic is over a private or encrypted tunnel. Very “best practice” if your organization already uses such a solution.  
+   - **Cons**: Higher up‐front complexity. Devs and external services must be on that private network or have a VPN/Tailscale client.
+2. **NLB Reverse Proxy + SSL + IP Allowlists**  
+   - **Pros**: Quick to set up, completely managed in AWS, and no plain text traffic with SSL.
+   - **Cons**: You do have a public LB, although restricted by IP allowlists and encrypted with SSL.
+
+## Implementation - VPN / Tailscale / Direct Connect / Transit Gateway
+
+I am going to skip this solution because of the following reasons:
+
+* It varies a lot based on your existing secure network setup.
+* If you are not already using Tailscale or a VPN, then there is added effort to get developers to install clients and configure them.
+* It might not be possible to use this solution if your external environment (ie. other cloud) cannot connect via VPN or Tailscale.
+* It could be blocked on management approval or security concerns.
+
+Whereas, the NLB Reverse Proxy + SSL + IP Allowlists solution can be completely implemented within AWS and does not require changes to your external environment.
+
+## Implementation - NLB Reverse Proxy + SSL + IP Allowlists
+
+### Diagram
+
+![AWS RDS Reverse Proxy with NLB Diagram](/images/diagrams/0004-aws-rds-reverse-proxy-nlb.drawio.svg)
+
+### Infrastructure as Code
+
+If you use Infrastructure as Code (IAC) tools like AWS CloudFormation or Terraform, I have written a template file and/or Terraform module you can use.
+
+**AWS CloudFormation Template**:
+
+```yaml
+```
+
+**Terraform Module**:
+
+https://github.com/vicyap/rds-reverse-proxy-nlb
+
+### Manual AWS Console Step-by-Step Guide
+
+Below is a **step‐by‐step guide** for manually setting up a **Network Load Balancer (NLB) reverse proxy** in the AWS Console, forwarding traffic on port 5432 (Postgres) from the internet to a **private** RDS instance. This guide also covers how to restrict inbound traffic to specific IP ranges. No Terraform or CloudFormation is needed—just point‐and‐click in the AWS web console.
+
+---
+
+#### **Prerequisites**
+
+1. **VPC with Public and Private Subnets**  
+   - You need at least one **public subnet** in which the NLB can be placed.  
+   - You already have (or will create) an RDS instance in **private subnets**.
+
+2. **RDS Postgres in Private Subnets**  
+   - Confirm your RDS instance is up and running.  
+   - Note its **endpoint** (e.g., `mydb.abcdefghijkl.us-east-1.rds.amazonaws.com`) and **port** (default 5432).  
+   - Make sure it **does NOT** have “publicly accessible” set to `true`.
+
+3. **A List of IP CIDRs** to Allow  
+   - You must know which external IP addresses or CIDRs you want to whitelist (e.g., your office IP, your Tailscale exit node, or your Aptible environment’s IP block).
+
+---
+
+#### **Step 1: Create (or Verify) a Security Group for RDS**
+
+Because a Network Load Balancer at Layer 4 does **not** have a security group directly attached to it, you typically control access **in the RDS security group**. Traffic from the NLB will preserve the **source IP** of the client, so we can whitelist client IPs right on the RDS side.
+
+1. In the AWS Console, navigate to **VPC → Security Groups**.  
+2. Find or create a Security Group that is **attached to your RDS** instance.  
+3. Under **Inbound rules**, add or edit a rule for:
+   - **Type**: Custom TCP (or PostgreSQL).  
+   - **Port range**: 5432 (or whatever your DB port is).  
+   - **Source**: One or more CIDR blocks you trust (e.g., `203.0.113.0/24`).  
+   - Optionally, you can add multiple rules if you have more than one IP block.  
+
+> **Note**: If you already have a rule allowing `0.0.0.0/0`, remove it if you want to restrict inbound to your known IP addresses.  
+
+---
+
+#### **Step 2: Create the Network Load Balancer**
+
+1. In the AWS Console, go to **EC2 → Load Balancers**.  
+2. Click **Create Load Balancer** and choose **Network Load Balancer**.  
+3. **Basic configuration**:
+   - **Name**: e.g. `my-nlb-postgres`.  
+   - **Scheme**: Select **internet-facing** (so it has a public IP).  
+   - **IP address type**: IPv4 (commonly).  
+
+4. **Network mapping**:
+   - Select the **VPC** where your RDS lives.  
+   - Under **Mappings**, choose **at least one public subnet** (often you pick 2+ public subnets in different AZs for high availability).
+
+5. **Listeners and routing**:
+   - **Protocol**: TCP.  
+   - **Port**: `5432` (Postgres default).  
+   - Click **Add listener** (or edit the default) to set the `TCP:5432`.
+
+6. **Target Group**:
+   - For “Default action,” select **Create a target group** (or choose an existing one if you already made it).  
+   - In the popup:
+     - **Choose a target type**: “IP addresses.”  
+     - **Protocol**: TCP.  
+     - **Port**: 5432.  
+     - **Name**: e.g. `my-nlb-targetgroup-postgres`.  
+     - **VPC**: same VPC as RDS.  
+     - Configure optional health checks. (TCP health checks basically check if the port is open.)
+
+   - Click **Next** or **Create** to define that target group. You’ll be brought back to the main Create LB wizard.
+
+7. **Advanced settings**:  
+   - **Enable Cross-Zone Load Balancing** (optional).  
+   - **Idle timeout**: Not applicable for NLB, skip.  
+   - **Deletion protection**: optional.
+
+8. Click **Create Load Balancer**.
+
+---
+
+#### **Step 3: Register the RDS Instance (or IP) with the Target Group**
+
+After creating the NLB, you’ll need to ensure the target group has the correct backend **IP** or DNS name for your RDS. Because RDS is a managed service, you can’t directly pick it from an “instances” list. Instead, you register it by IP or domain name.
+
+1. Go to **EC2 → Target Groups**.  
+2. Find the target group you just created (e.g. `my-nlb-targetgroup-postgres`).  
+3. Click **Targets** → **Edit** or **Register targets**.  
+4. **Choose “IP”** as the registration type.  
+5. You can look up the RDS’s private IP if you do one of the following:
+   - **Console approach**: In RDS console → your DB → Connectivity & security tab → note the “Endpoint” and “Subnet group.” Unfortunately, the console doesn’t always show the private IP.  
+   - **SSH** from an EC2 in the same VPC, run `dig mydb.abcdefghijkl.us-east-1.rds.amazonaws.com` to get the IP.  
+   - Or use an AWS CLI command like `aws rds describe-db-instances` to see the IP.  
+
+   **If you can’t easily get the private IP** (e.g., multi‐AZ failover?), a typical manual approach is to just pick the current IP. If the DB fails over, you’d have to re‐update. (In production, people sometimes do more advanced setups or rely on domain-based registration.)
+
+6. Register the RDS’s private IP on port 5432.  
+7. Click **Save** or **Register**.  
+8. The target group health check should eventually show as **healthy** if everything is correct.
+
+---
+
+#### **Step 4: Adjust the RDS Security Group for NLB Traffic**
+
+### IP Whitelist
+
+Because the **NLB** preserves the source IP** at layer 4, the traffic to your RDS arrives with the **original client** IP. Therefore:
+
+- If you want to strictly allow only certain IPs, you’ve already whitelisted them in Step 1. That’s typically enough.
+- No special inbound rule is needed for the NLB’s IPs specifically, because the source IP is still the real client’s IP.
+
+### (Optional) Allow NLB Subnet Range
+
+In some setups, you might prefer to allow inbound traffic from the **NLB subnets**. But that will let *anyone* connecting via the NLB through to RDS. If you want user-by-user IP filtering, just keep your inbound rules set to the external IP addresses or CIDRs you trust.
+
+---
+
+#### **Step 5: Test the Connection**
+
+1. In the **EC2 → Load Balancers** page, find your new NLB and note its **DNS name** (something like `my-nlb-postgres-abcdef123.us-east-1.elb.amazonaws.com`).  
+2. From a client whose IP is in your **whitelist**:
+   - Attempt a Postgres connection using that DNS name and port 5432. For instance:
+     ```
+     psql "host=my-nlb-postgres-abcdef123.us-east-1.elb.amazonaws.com port=5432 user=postgres password=... sslmode=require"
+     ```
+   - If RDS has a password, user, and DB set up, use those credentials.  
+   - If successful, you’re now connecting from the public internet (or your external IP) through the NLB, ending up at the RDS instance in private subnets.
+
+3. If you get an error, confirm:
+   - Your client’s IP is actually in the security group’s **inbound** rules.  
+   - You have no local firewall blocking outbound 5432.  
+   - The RDS user/password is correct.  
+   - The target group health check is **healthy**.  
+
+---
+
+#### **Step 6 (Optional): Enforce Postgres SSL**
+
+1. By default, many RDS Postgres instances require SSL. Ensure your Postgres client uses `sslmode=require` (or `verify-full` if you have the RDS CA certificate).  
+2. If you want to guarantee that only encrypted connections occur, you can configure the **DB Parameter Group** to enforce SSL. Then all connections to RDS must be over TLS.  
+3. The NLB is just doing **TCP pass‐through**, so the traffic remains encrypted end‐to‐end.
+
+---
+
+#### **That’s It!**
+
+You have successfully:
+
+- Created an **internet-facing NLB** in a public subnet.  
+- Configured it to forward TCP/5432 to your RDS’s IP in private subnets.  
+- Restricted inbound traffic by whitelisting specific IPs in the **RDS security group**.  
+- Ensured end‐to‐end encryption with Postgres SSL if you choose to do so.
+
+Now any traffic from your trusted IP ranges can connect to your DB via the NLB DNS name, while the DB itself remains private in your VPC.
+
